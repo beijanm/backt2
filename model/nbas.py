@@ -31,3 +31,19 @@ def getNbaAPIData(nba):
 if __name__ == "__main__": 
     initNba()  # initialize jokes
     
+    
+import http.client
+import json
+
+def getNbaAPIData():
+    conn = http.client.HTTPSConnection("api-nba-v1.p.rapidapi.com")
+    headers = {
+        'X-RapidAPI-Key': '1306b1f63emsha5d59ab521a0ab0p111cd2jsnd07add0e48ff',  # Make sure to replace 'YOUR_API_KEY_HERE' with your actual API key
+        'X-RapidAPI-Host': 'api-nba-v1.p.rapidapi.com'
+    }
+    conn.request("GET", "/players/league/standard", '', headers)  # Adjust the endpoint as necessary
+    res = conn.getresponse()
+    data = res.read()
+    return json.loads(data.decode("utf-8"))
+
+# No need for 'if __name__ == "__main__":' block here as it's part of the model
