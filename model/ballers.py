@@ -45,6 +45,15 @@ class Baller(db.Model):
             "dob": self.dob.strftime('%Y-%m-%d'),
             "stats": [stat.read() for stat in self.stats]
         }
+    
+    def delete(self):
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return {'message': 'Player deleted successfully'}, 200
+        except Exception as e:
+            db.session.rollback()
+            return {'message': str(e)}, 500
 
 class Stat(db.Model):
     __tablename__ = 'stats'
