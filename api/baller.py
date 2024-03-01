@@ -17,7 +17,6 @@ from model.ballers import Baller  # Ensure this import matches your project stru
 
 baller_api = Blueprint('baller_api', __name__, url_prefix='/api/ballers')
 api = Api(baller_api)
-CORS(api)
 
 class BallerCRUD(Resource):
     def post(self):
