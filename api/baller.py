@@ -66,18 +66,62 @@ class BallerCRUD(Resource):
                 return {'message': str(e)}, 500
         else:
             return {'message': f'Baller with name {name} not found.'}, 404
+        
 class PlayerStats(Resource):
     def get(self, player_id):
-        player = Baller.query.get(player_id)
-        if not player:
-            return {'message': 'Player not found'}, 404
+        stats = Stat.query.filter_by(player_id=player_id).all()
+        if stats:
+            return jsonify([stat.read() for stat in stats])
+        else:
+            return {'message': 'No stats available for this player'}, 404
+
+    def post(self, player_id):
+        body = request.get_json()
+        # Ensure all required fields are present
+        if not all(key in body for key in ('points_per_game', 'assists_per_game', 'rebounds_per_game')):
+            return {'message': 'Missing stats data'}, 400
+
+        new_stat = Stat(
+            player_id=player_id,
+            points_per_game=body['points_per_game'],
+            assists_per_game=body['assists_per_game'],
+            rebounds_per_game=body['rebounds_per_game']
+        )
+
+        try:
+            db.session.add(new_stat)
+            db.session.commit()
+            return jsonify(new_stat.serialize()), 201  # Ensure you have a serialize method for Stat
+        except Exception as e:
+            db.session.rollback()
+            return {'message': str(e)}, 500
         
-        # Assume player.read() includes stats in its output
-        return jsonify({'player': player.read()})
+    def put(self, player_id):
+        body = request.get_json()
+        # Ensure all required fields are present
+        if not all(key in body for key in ('points_per_game', 'assists_per_game', 'rebounds_per_game')):
+            return {'message': 'Missing stats data'}, 400
+
+        stat = Stat.query.filter_by(player_id=player_id).first()
+        if stat:
+            stat.points_per_game = body['points_per_game']
+            stat.assists_per_game = body['assists_per_game']
+            stat.rebounds_per_game = body['rebounds_per_game']
+        else:
+            # Option to create new stats if not found, or return an error
+            return {'message': 'Stats for this player not found, consider adding them instead.'}, 404
+
+        try:
+            db.session.commit()
+            return (stat.read()), 200
+        except Exception as e:
+            db.session.rollback()
+            return {'message': str(e)}, 500
 
         
 
 # Add the CRUD resource to the API
 api.add_resource(BallerCRUD, '/')
-api.add_resource(PlayerStats, '/<int:player_id>/stats')
+api.add_resource(PlayerStats, '/<int:player_id>/stats', methods=['GET', 'POST', 'PUT'])
+
 
