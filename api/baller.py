@@ -5,6 +5,8 @@ from datetime import datetime
 # Assuming you have a similar authentication middleware for token verification
 from auth_middleware import token_required 
 import json
+from flask import Flask
+from flask_cors import CORS
 
 from model.ballers import db, Baller, Stat
 
@@ -15,6 +17,7 @@ from model.ballers import Baller  # Ensure this import matches your project stru
 
 baller_api = Blueprint('baller_api', __name__, url_prefix='/api/ballers')
 api = Api(baller_api)
+CORS(api)
 
 class BallerCRUD(Resource):
     def post(self):
